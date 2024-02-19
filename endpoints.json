@@ -25,5 +25,17 @@
         }
       ]
     }
+  },
+  "GET /api/articles/:article_id": {
+    "description": "serves an object of a specific article using the article_id as en endpoint",
+    "queries": ["article_id"],
+    "exampleResponse": {
+      "title": "Eight pug gifs that remind me of mitch",
+      "topic": "mitch",
+      "author": "icellusedkars",
+      "body": "some gifs",
+      "created_at": 1604394720000,
+      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+    }
   }
 }
