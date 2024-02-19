@@ -1,3 +1,4 @@
-# Northcoders News API
-
-For instructions, please head over to [L2C NC News](https://l2c.northcoders.com/courses/be/nc-news).
+To succesfully connect to the Database you must create 2 .env files:
+.env.test=PGDATABASE
+.env.development=PGDATABASE
+replace PGDATABASE with the correct Database name.
