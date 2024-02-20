@@ -13,3 +13,34 @@ exports.fetchArticleById = (article_id) => {
       return result.rows[0];
     });
 };
+
+exports.fetchArticles = (query) => {
+  let defaultOrder = "asc";
+  let defaultColumn = "topic";
+  const { sort_by, order } = query;
+  if (sort_by) defaultColumn = sort_by;
+
+  if (!["author", "topic"].includes(defaultColumn)) {
+    return Promise.reject({ status: 400, msg: "Invalid query" });
+  }
+
+  if (order) defaultOrder = order;
+
+  if (!["asc", "desc"].includes(defaultOrder)) {
+    return Promise.reject({ status: 400, msg: "Invalid query" });
+  }
+
+  let sqlQuery = `SELECT articles.article_id,articles.title,articles.topic,articles.author,articles.created_at,articles.votes,articles.article_img_url, COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id,articles.title,articles.topic,articles.author,articles.created_at,articles.votes,articles.article_img_url`;
+
+  const orderBy = ` ORDER BY articles.${defaultColumn} ${defaultOrder}, articles.created_at desc`;
+
+  sqlQuery += orderBy;
+
+  return db.query(sqlQuery).then((result) => {
+    if (result.rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "not found" });
+    }
+
+    return result;
+  });
+};
