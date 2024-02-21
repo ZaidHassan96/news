@@ -4,7 +4,6 @@ const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data/index");
 const app = require("../app");
 const endPoints = require("../endpoints.json");
-const { string } = require("pg-format");
 const comments = require("../db/data/test-data/comments");
 
 beforeEach(() => seed(testData));
@@ -91,7 +90,6 @@ describe("GET: /api/articles", () => {
       .expect(200)
       .then((response) => {
         const articles = response.body.articles;
-        console.log(articles);
         articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
@@ -132,10 +130,11 @@ describe("GET: /api/articles", () => {
 describe("GET: /api/articles/:article_id/comments", () => {
   test("returns an array of comments for given article_id with the following properties: comment_id, votes, created_at, author, body article_id", () => {
     return request(app)
-      .get("/api/articles/3/comments")
+      .get("/api/articles/1/comments")
       .expect(200)
       .then((response) => {
         const commentsArray = response.body.comments;
+        expect(commentsArray.length).toBe(11);
         commentsArray.forEach((comment) => {
           expect(comment).toMatchObject({
             body: expect.any(String),
@@ -179,6 +178,54 @@ describe("GET: /api/articles/:article_id/comments", () => {
       .then((response) => {
         const comments = response.body;
         expect(comments.length).toBe(0);
+      });
+  });
+});
+describe("POST: /api/articles/:article_id/comments", () => {
+  test("should post a comment to an article by specific article_id", () => {
+    const commentData = {
+      username: "butter_bridge",
+      body: "I done 10 push-ups",
+    };
+    return request(app)
+      .post(`/api/articles/1/comments`)
+      .send(commentData)
+      .expect(201)
+      .then((response) => {
+        const commentArray = response.body;
+
+        expect(commentArray.comment).toMatchObject({
+          body: expect.any(String),
+          votes: expect.any(Number),
+          author: expect.any(String),
+          article_id: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("should return a 400 bad request if missing any part of request body", () => {
+    const commentData = {};
+
+    return request(app)
+      .post(`/api/articles/1/comments`)
+      .send(commentData)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("should return a 400 if trying to post to and article_id that does not exist", () => {
+    const commentData = {
+      username: "butter_bridge",
+      body: "I done 10 push-ups",
+    };
+
+    return request(app)
+      .post(`/api/articles/999/comments`)
+      .send(commentData)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("not found");
       });
   });
 });

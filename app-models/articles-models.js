@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const format = require("pg-format");
 
 exports.fetchArticleById = (article_id) => {
   return db
@@ -58,4 +59,29 @@ exports.fetchCommentsByArticleId = (article_id) => {
     .then((result) => {
       return result.rows;
     });
+};
+
+exports.insertCommentByArticleId = (article_id, username, body) => {
+  if (!username || !body) {
+    return Promise.reject({
+      status: 400,
+      msg: "missing input",
+    });
+  }
+
+  const formatInput = format(
+    "INSERT INTO comments (body, votes, author, article_id) VALUES (%L, %L, %L, %L) RETURNING *;",
+    body,
+    0,
+    username,
+    article_id
+  );
+
+  return db.query(formatInput).then((result) => {
+    // if (result.rows.length === 0) {
+    //   return Promise.reject({ status: 404, msg: "not found" });
+    // }
+
+    return result.rows[0];
+  });
 };
