@@ -78,10 +78,27 @@ exports.insertCommentByArticleId = (article_id, username, body) => {
   );
 
   return db.query(formatInput).then((result) => {
-    // if (result.rows.length === 0) {
-    //   return Promise.reject({ status: 404, msg: "not found" });
-    // }
-
     return result.rows[0];
   });
+};
+
+exports.changeVoteOnArticleId = (ariticle_id, inc_votes) => {
+  if (!ariticle_id || !inc_votes) {
+    return Promise.reject({
+      status: 400,
+      msg: "missing input",
+    });
+  }
+  return db
+    .query(
+      `UPDATE articles SET votes = $1 WHERE article_id = $2 RETURNING *;`,
+      [inc_votes, ariticle_id]
+    )
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "not found" });
+      }
+
+      return result.rows[0];
+    });
 };
