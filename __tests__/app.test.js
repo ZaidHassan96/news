@@ -5,6 +5,7 @@ const testData = require("../db/data/test-data/index");
 const app = require("../app");
 const endPoints = require("../endpoints.json");
 const comments = require("../db/data/test-data/comments");
+const moment = require('moment');
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -193,13 +194,14 @@ describe("POST: /api/articles/:article_id/comments", () => {
       .expect(201)
       .then((response) => {
         const commentArray = response.body;
+       
 
         expect(commentArray.comment).toMatchObject({
-          body: expect.any(String),
-          votes: expect.any(Number),
-          author: expect.any(String),
-          article_id: expect.any(Number),
-          created_at: expect.any(String),
+          body: "I done 10 push-ups" ,
+          votes: 0,
+          author: "butter_bridge" ,
+          article_id: 1,
+          created_at: expect.any(String)
         });
       });
   });
@@ -222,6 +224,34 @@ describe("POST: /api/articles/:article_id/comments", () => {
 
     return request(app)
       .post(`/api/articles/999/comments`)
+      .send(commentData)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("not found");
+      });
+  });
+  test("should return a 400 if trying to post to an invalid article_id", () => {
+    const commentData = {
+      username: "butter_bridge",
+      body: "I done 10 push-ups",
+    };
+
+    return request(app)
+      .post(`/api/articles/apples/comments`)
+      .send(commentData)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("should return a 404 if user does not exist", () => {
+    const commentData = {
+      username: "Mr_Apples",
+      body: "I done 10 push-ups",
+    };
+
+    return request(app)
+      .post(`/api/articles/1/comments`)
       .send(commentData)
       .expect(404)
       .then((response) => {
@@ -274,6 +304,27 @@ describe(" PATCH: /api/articles/:article_id", () => {
       .expect(404)
       .then((response) => {
         expect(response.body.msg).toBe("not found");
+      });
+  });
+});
+describe("DELETE: /api/comments/:comment_id", () => {
+  test("should delete a comment and respond with 204 no content", () => {
+    return request(app).delete("/api/comments/10").expect(204);
+  });
+  test(" responds with a 404 appropriate status and error message when given a non-existent id", () => {
+    return request(app)
+      .delete("/api/comments/999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("not found");
+      });
+  });
+  test("responds with a 400 appropriate status and error message when given an invalid id", () => {
+    return request(app)
+      .delete("/api/comments/apples")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
       });
   });
 });

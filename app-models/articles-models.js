@@ -1,5 +1,7 @@
 const db = require("../db/connection");
 const format = require("pg-format");
+const { checkUserExists } = require("../functions/user-check");
+
 
 exports.fetchArticleById = (article_id) => {
   return db
@@ -68,6 +70,14 @@ exports.insertCommentByArticleId = (article_id, username, body) => {
       msg: "missing input",
     });
   }
+const doesUserExist = checkUserExists(username)
+if (doesUserExist === false){
+  return Promise.reject({
+    status: 404,
+    msg: "not found"
+  })
+}
+
 
   const formatInput = format(
     "INSERT INTO comments (body, votes, author, article_id) VALUES (%L, %L, %L, %L) RETURNING *;",
