@@ -214,7 +214,7 @@ describe("POST: /api/articles/:article_id/comments", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
-  test("should return a 400 if trying to post to and article_id that does not exist", () => {
+  test("should return a 404 if trying to post to an article_id that does not exist", () => {
     const commentData = {
       username: "butter_bridge",
       body: "I done 10 push-ups",
@@ -223,6 +223,54 @@ describe("POST: /api/articles/:article_id/comments", () => {
     return request(app)
       .post(`/api/articles/999/comments`)
       .send(commentData)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("not found");
+      });
+  });
+});
+describe(" PATCH: /api/articles/:article_id", () => {
+  test("should update an articles vote by article_id", () => {
+    const newVote = { inc_votes: -20 };
+
+    return request(app)
+      .patch("/api/articles/3")
+      .send(newVote)
+      .expect(200)
+      .then((response) => {
+        const articleArray = response.body;
+        expect(articleArray).toMatchObject({
+          article: {
+            article_id: 3,
+            title: "Eight pug gifs that remind me of mitch",
+            topic: "mitch",
+            author: "icellusedkars",
+            body: "some gifs",
+            created_at: "2020-11-03T09:12:00.000Z",
+            votes: -20,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          },
+        });
+      });
+  });
+  test("should return a 400 bad request if missing any part of request body", () => {
+    const newVote = {};
+
+    return request(app)
+      .patch(`/api/articles/1`)
+      .send(newVote)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("should return a 404 if trying to patch to an article_id that does not exist", () => {
+    const newVote = { inc_votes: -20 };
+
+    return request(app)
+      .patch(`/api/articles/999`)
+      .send(newVote)
       .expect(404)
       .then((response) => {
         expect(response.body.msg).toBe("not found");

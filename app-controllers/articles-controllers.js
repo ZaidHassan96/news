@@ -1,6 +1,7 @@
 const {
   checkArticleIdExists,
   insertCommentByArticleId,
+  changeVoteOnArticleId,
 } = require("../app-models/articles-models");
 const { fetchCommentsByArticleId } = require("../app-models/articles-models");
 const {
@@ -63,4 +64,16 @@ exports.postCommentByArticleId = (request, response, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.patchArticleByArticleId = (request, response, next) => {
+  const { article_id } = request.params;
+  const { inc_votes } = request.body;
+
+  changeVoteOnArticleId(article_id, inc_votes).then((result) => {
+    const article = result;
+    response.status(200).send({ article });
+  }).catch((err) => {
+    next(err)
+  })
 };
