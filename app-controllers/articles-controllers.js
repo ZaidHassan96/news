@@ -1,9 +1,13 @@
-const { checkArticleIdExists } = require("../app-models/articles-models");
+const {
+  checkArticleIdExists,
+  insertCommentByArticleId,
+} = require("../app-models/articles-models");
 const { fetchCommentsByArticleId } = require("../app-models/articles-models");
 const {
   fetchArticleById,
   fetchArticles,
 } = require("../app-models/articles-models");
+const { commentData } = require("../db/data/test-data");
 
 exports.getArticleById = (request, response, next) => {
   const article_id = request.params.article_id;
@@ -41,6 +45,20 @@ exports.getCommentsByArticleId = (request, response, next) => {
         const comments = result;
         response.status(200).send({ comments });
       }
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postCommentByArticleId = (request, response, next) => {
+  const { article_id } = request.params;
+  const { username, body } = request.body;
+
+  insertCommentByArticleId(article_id, username, body)
+    .then((result) => {
+      const comment = result;
+      response.status(201).send({ comment });
     })
     .catch((err) => {
       next(err);
