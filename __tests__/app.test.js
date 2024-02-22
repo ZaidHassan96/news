@@ -119,6 +119,15 @@ describe("GET: /api/articles", () => {
           });
         });
     });
+    test("returns an empty array when a topic does exist but it has no articles", () => {
+      return request(app)
+        .get("/api/articles?topic=paper")
+        .expect(200)
+        .then((response) => {
+          const comments = response.body;
+          expect(comments.length).toBe(0);
+        });
+    });
 
     test("should return 404 if an invalid query is entered", () => {
       return request(app)
@@ -149,7 +158,7 @@ describe("GET: /api/articles/:article_id/comments", () => {
         });
       });
   });
-  test("returns an array of comments for given ariticle_id with most recent comment first", () => {
+  test("returns an array of comments for given article_id with most recent comment first", () => {
     return request(app)
       .get("/api/articles/3/comments")
       .expect(200)
@@ -285,17 +294,7 @@ describe(" PATCH: /api/articles/:article_id", () => {
         });
       });
   });
-  test("should return a 400 bad request if missing any part of request body", () => {
-    const newVote = {};
 
-    return request(app)
-      .patch(`/api/articles/1`)
-      .send(newVote)
-      .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toBe("Bad request");
-      });
-  });
   test("should return a 404 if trying to patch to an article_id that does not exist", () => {
     const newVote = { inc_votes: -20 };
 
@@ -328,6 +327,10 @@ describe(" PATCH: /api/articles/:article_id", () => {
       .then((response) => {
         expect(response.body.msg).toBe("Bad request");
       });
+  });
+  test("should return a 200 if votes is missing ", () => {
+    const newVote = {};
+    return request(app).patch(`/api/articles/1`).send(newVote).expect(200);
   });
 });
 describe("DELETE: /api/comments/:comment_id", () => {

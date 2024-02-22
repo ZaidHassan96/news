@@ -24,11 +24,14 @@ exports.getArticleById = (request, response, next) => {
 
 exports.getArticles = (request, response, next) => {
   const { query } = request;
-
   fetchArticles(query)
     .then((result) => {
-      const articles = result.rows;
-      response.status(200).send({ articles });
+      if (result.length === 0) {
+        response.status(200).send(result);
+      } else {
+        const articles = result;
+        response.status(200).send({ articles });
+      }
     })
     .catch((err) => {
       next(err);

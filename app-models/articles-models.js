@@ -1,19 +1,13 @@
 const db = require("../db/connection");
 const format = require("pg-format");
 const { checkUserExists } = require("../functions/user-check");
+const { checkTopicExists } = require("../functions/topic-check");
 
 exports.fetchArticleById = (article_id) => {
   return db
     .query(
-      `SELECT
-      articles.article_id,
-      articles.title,
-      articles.topic,
-      articles.author,
-      articles.body,
-      articles.created_at,
-      articles.votes,
-      articles.article_img_url,
+      `SELECT articles.*,
+    
       COUNT(comments.comment_id)::INT AS comment_count
     FROM
       articles
@@ -22,14 +16,7 @@ exports.fetchArticleById = (article_id) => {
     WHERE
       articles.article_id = $1
     GROUP BY
-      articles.article_id,
-      articles.title,
-      articles.topic,
-      articles.author,
-      articles.body,
-      articles.created_at,
-      articles.votes,
-      articles.article_img_url
+      articles.article_id
     ORDER BY
       articles.created_at DESC;
     `,
@@ -74,10 +61,16 @@ exports.fetchArticles = (query) => {
 
   return db.query(sqlQuery, values).then((result) => {
     if (result.rows.length === 0) {
-      return Promise.reject({ status: 404, msg: "not found" });
+      return checkTopicExists(topic).then((doesTopicExist) => {
+        if (doesTopicExist) {
+          return result.rows;
+        } else {
+          return Promise.reject({ status: 404, msg: "not found" });
+        }
+      });
     }
 
-    return result;
+    return result.rows;
   });
 };
 
@@ -122,23 +115,30 @@ exports.insertCommentByArticleId = (article_id, username, body) => {
   });
 };
 
-exports.changeVoteOnArticleId = (ariticle_id, inc_votes) => {
-  if (!ariticle_id || !inc_votes) {
+exports.changeVoteOnArticleId = (article_id, inc_votes) => {
+  if (!article_id) {
     return Promise.reject({
       status: 400,
       msg: "missing input",
     });
   }
-  return db
-    .query(
-      `UPDATE articles SET votes = $1 WHERE article_id = $2 RETURNING *;`,
-      [inc_votes, ariticle_id]
-    )
-    .then((result) => {
-      if (result.rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "not found" });
-      }
 
-      return result.rows[0];
-    });
+  let query;
+  let values;
+
+  if (inc_votes !== undefined) {
+    query = `UPDATE articles SET votes = $1 WHERE article_id = $2 RETURNING *;`;
+    values = [inc_votes, article_id];
+  } else {
+    query = `UPDATE articles SET article_id = $1 WHERE article_id = $2 RETURNING *;`;
+    values = [article_id, article_id];
+  }
+
+  return db.query(query, values).then((result) => {
+    if (result.rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "not found" });
+    }
+
+    return result.rows[0];
+  });
 };

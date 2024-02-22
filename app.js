@@ -29,7 +29,7 @@ app.get("/api/articles", getArticles);
 
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 
-app.get("/api/users", getUsers)
+app.get("/api/users", getUsers);
 
 app.post("/api/articles/:article_id/comments", postCommentByArticleId);
 
@@ -59,14 +59,12 @@ app.use((err, request, response, next) => {
   }
   if (err.code === "23503") {
     response.status(404).send({ msg: "not found" });
-  } 
-  if (err.status && err.msg){
-    response.status(err.status).send({msg: err.msg})
   }
-  else {
+  if (err.status && err.msg) {
+    response.status(err.status).send({ msg: err.msg });
+  } else {
     response.status(500).send({ msg: "Internal Server Error" });
   }
 });
-
 
 module.exports = app;
