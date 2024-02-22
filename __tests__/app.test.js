@@ -5,7 +5,7 @@ const testData = require("../db/data/test-data/index");
 const app = require("../app");
 const endPoints = require("../endpoints.json");
 const comments = require("../db/data/test-data/comments");
-const moment = require('moment');
+const users = require("../db/data/test-data/users");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -118,7 +118,7 @@ describe("GET: /api/articles", () => {
         });
     });
 
-    test("should return 400 bad request if an invalid query is entered", () => {
+    test("should return 404 if an invalid query is entered", () => {
       return request(app)
         .get("/api/articles?topic=banana")
         .expect(404)
@@ -194,14 +194,13 @@ describe("POST: /api/articles/:article_id/comments", () => {
       .expect(201)
       .then((response) => {
         const commentArray = response.body;
-       
 
         expect(commentArray.comment).toMatchObject({
-          body: "I done 10 push-ups" ,
+          body: "I done 10 push-ups",
           votes: 0,
-          author: "butter_bridge" ,
+          author: "butter_bridge",
           article_id: 1,
-          created_at: expect.any(String)
+          created_at: expect.any(String),
         });
       });
   });
@@ -255,7 +254,7 @@ describe("POST: /api/articles/:article_id/comments", () => {
       .send(commentData)
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("not found");
+        expect(response.body.msg).toBe("user not found");
       });
   });
 });
@@ -306,6 +305,28 @@ describe(" PATCH: /api/articles/:article_id", () => {
         expect(response.body.msg).toBe("not found");
       });
   });
+  test("should return a 400 if trying to patch to an article_id that is an invalid type", () => {
+    const newVote = { inc_votes: -20 };
+
+    return request(app)
+      .patch(`/api/articles/apples`)
+      .send(newVote)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("should return a 400 if trying to patch and vote value is not a number", () => {
+    const newVote = { inc_votes: "apples" };
+
+    return request(app)
+      .patch(`/api/articles/1`)
+      .send(newVote)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
 });
 describe("DELETE: /api/comments/:comment_id", () => {
   test("should delete a comment and respond with 204 no content", () => {
@@ -316,7 +337,7 @@ describe("DELETE: /api/comments/:comment_id", () => {
       .delete("/api/comments/999")
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("not found");
+        expect(response.body.msg).toBe("id does not exist");
       });
   });
   test("responds with a 400 appropriate status and error message when given an invalid id", () => {
@@ -325,6 +346,32 @@ describe("DELETE: /api/comments/:comment_id", () => {
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe("Bad request");
+      });
+  });
+});
+describe("GET: /api/users", () => {
+  test("returns an array of user objects", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then((response) => {
+        const usersArray = response.body.users;
+        expect(usersArray.length).toBe(4);
+        usersArray.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
+      });
+  });
+  test("should return a 404 if endpoint does not exist ", () => {
+    return request(app)
+      .get("/api/apples")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("path not found");
       });
   });
 });

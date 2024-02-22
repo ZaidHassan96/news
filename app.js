@@ -14,6 +14,7 @@ const {
 const {
   deleteCommentByCommentId,
 } = require("./app-controllers/comments-controllers");
+const { getUsers } = require("./app-controllers/users-controllers");
 const app = express();
 
 app.use(express.json());
@@ -27,6 +28,8 @@ app.get("/api/articles/:article_id", getArticleById);
 app.get("/api/articles", getArticles);
 
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
+
+app.get("/api/users", getUsers)
 
 app.post("/api/articles/:article_id/comments", postCommentByArticleId);
 
@@ -56,7 +59,11 @@ app.use((err, request, response, next) => {
   }
   if (err.code === "23503") {
     response.status(404).send({ msg: "not found" });
-  } else {
+  } 
+  if (err.status && err.msg){
+    response.status(err.status).send({msg: err.msg})
+  }
+  else {
     response.status(500).send({ msg: "Internal Server Error" });
   }
 });
