@@ -7,7 +7,7 @@ exports.removeCommentByCommentId = (comment_id) => {
       if (result.rowCount === 0){
         return Promise.reject({
           status: 404,
-          msg: "not found"
+          msg: "id does not exist"
         })
       }
     });

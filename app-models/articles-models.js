@@ -2,7 +2,6 @@ const db = require("../db/connection");
 const format = require("pg-format");
 const { checkUserExists } = require("../functions/user-check");
 
-
 exports.fetchArticleById = (article_id) => {
   return db
     .query(`SELECT * FROM articles WHERE article_id = $1;`, [article_id])
@@ -70,25 +69,26 @@ exports.insertCommentByArticleId = (article_id, username, body) => {
       msg: "missing input",
     });
   }
-const doesUserExist = checkUserExists(username)
-if (doesUserExist === false){
-  return Promise.reject({
-    status: 404,
-    msg: "not found"
-  })
-}
 
+  return checkUserExists(username).then((doesUserExist) => {
+    if (!doesUserExist) {
+      return Promise.reject({
+        status: 404,
+        msg: "user not found",
+      });
+    }
 
-  const formatInput = format(
-    "INSERT INTO comments (body, votes, author, article_id) VALUES (%L, %L, %L, %L) RETURNING *;",
-    body,
-    0,
-    username,
-    article_id
-  );
+    const formatInput = format(
+      "INSERT INTO comments (body, votes, author, article_id) VALUES (%L, %L, %L, %L) RETURNING *;",
+      body,
+      0,
+      username,
+      article_id
+    );
 
-  return db.query(formatInput).then((result) => {
-    return result.rows[0];
+    return db.query(formatInput).then((result) => {
+      return result.rows[0];
+    });
   });
 };
 
