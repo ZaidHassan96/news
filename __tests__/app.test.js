@@ -63,6 +63,7 @@ describe("GET: /api/articles/:article_id", () => {
             votes: 0,
             article_img_url:
               "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+            comment_count: 2,
           },
         });
       });
@@ -112,6 +113,7 @@ describe("GET: /api/articles", () => {
         .expect(200)
         .then((response) => {
           const articles = response.body.articles;
+          expect(articles.length).toBe(1);
           articles.forEach((article) => {
             expect(article.topic).toEqual("cats");
           });
@@ -174,7 +176,7 @@ describe("GET: /api/articles/:article_id/comments", () => {
   });
   test("returns an empty array when article_id does exist but it has no comments", () => {
     return request(app)
-      .get("/api/articles/4/comments")
+      .get("/api/articles/8/comments")
       .expect(200)
       .then((response) => {
         const comments = response.body;
