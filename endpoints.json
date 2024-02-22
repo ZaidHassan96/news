@@ -10,7 +10,7 @@
     }
   },
   "GET /api/articles": {
-    "description": "serve an array of all articles",
+    "description": "serves an array of all articles",
     "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
@@ -34,7 +34,8 @@
       "author": "icellusedkars",
       "body": "some gifs",
       "created_at": 1604394720000,
-      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      "comment_count": 2
     }
   },
   "GET /api/articles/:article_id/comments": {
@@ -93,4 +94,3 @@
     }
   }
 }
-

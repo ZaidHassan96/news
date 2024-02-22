@@ -21,7 +21,7 @@ exports.getArticleById = (request, response, next) => {
       next(err);
     });
 };
-//
+
 exports.getArticles = (request, response, next) => {
   const { query } = request;
 
