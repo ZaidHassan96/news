@@ -106,7 +106,7 @@ describe("GET: /api/articles", () => {
       });
   });
   describe("article queries", () => {
-    test("should return the articles filtered by given topics", () => {
+    test("should return the articles filtered by given topics//", () => {
       return request(app)
         .get("/api/articles?topic=cats")
         .expect(200)

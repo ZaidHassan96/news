@@ -15,7 +15,7 @@ exports.fetchArticleById = (article_id) => {
       return result.rows[0];
     });
 };
-
+//
 exports.fetchArticles = (query) => {
   const { topic } = query;
   if (topic && typeof topic !== "string") {
