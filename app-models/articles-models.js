@@ -156,7 +156,7 @@ exports.changeVoteOnArticleId = (article_id, inc_votes) => {
   let values;
 
   if (inc_votes !== undefined) {
-    query = `UPDATE articles SET votes = $1 WHERE article_id = $2 RETURNING *;`;
+    query = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;`;
     values = [inc_votes, article_id];
   } else {
     query = `UPDATE articles SET article_id = $1 WHERE article_id = $2 RETURNING *;`;
