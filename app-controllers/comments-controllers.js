@@ -1,5 +1,5 @@
 const { response } = require("../app");
-const { removeCommentByCommentId } = require("../app-models/comments-models");
+const { removeCommentByCommentId, changeVoteByCommentId } = require("../app-models/comments-models");
 
 exports.deleteCommentByCommentId = (request, response, next) => {
   const { comment_id } = request.params;
@@ -11,3 +11,15 @@ exports.deleteCommentByCommentId = (request, response, next) => {
       next(err);
     });
 };
+
+exports.updateVoteByCommentId = (request, response, next) => {
+  const { comment_id } = request.params;
+  const { inc_votes } = request.body;
+  changeVoteByCommentId(comment_id,inc_votes).then((result) => {
+    const comment = result
+    response.status(200).send({comment})
+  }).catch((err) => {
+    next(err)
+  })
+
+}

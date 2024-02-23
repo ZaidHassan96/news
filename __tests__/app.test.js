@@ -446,5 +446,64 @@ describe("GET: /api/users/:username", () => {
         expect(response.body.msg).toBe("username does not exist");
       });
   });
-  
+});
+describe("PATCH: /api/comments/:comment_id", () => {
+  test("should update a comments vote by comment_id", () => {
+    const newVote = { inc_votes: 250 };
+
+    return request(app)
+      .patch("/api/comments/4")
+      .send(newVote)
+      .expect(200)
+      .then((response) => {
+        const articleArray = response.body;
+
+        expect(articleArray).toMatchObject({
+          comment: {
+            body: " I carry a log — yes. Is it funny to you? It is not to me.",
+            votes: 150,
+            author: "icellusedkars",
+            article_id: 1,
+            created_at: expect.any(String),
+          },
+        });
+      });
+  });
+  test("should return a 404 if trying to patch to a comment_id that does not exist", () => {
+    const newVote = { inc_votes: 10 };
+
+    return request(app)
+      .patch(`/api/comments/999`)
+      .send(newVote)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("comment not found");
+      });
+  });
+  test("should return a 400 if trying to patch to a comment_id that is an invalid type", () => {
+    const newVote = { inc_votes: 50 };
+
+    return request(app)
+      .patch(`/api/comments/apples`)
+      .send(newVote)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("should return a 400 if trying to patch and vote value is not a number", () => {
+    const newVote = { inc_votes: "apples" };
+
+    return request(app)
+      .patch(`/api/comments/1`)
+      .send(newVote)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("should return a 200 if votes is missing ", () => {
+    const newVote = {};
+    return request(app).patch(`/api/comments/1`).send(newVote).expect(200);
+  });
 });
