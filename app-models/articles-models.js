@@ -34,10 +34,30 @@ exports.fetchArticleById = (article_id) => {
 };
 
 exports.fetchArticles = (query) => {
-  const { topic } = query;
+  const { topic, sort_by, order } = query;
   if (topic && typeof topic !== "string") {
     return Promise.reject({ status: 400, msg: "Invalid topic query" });
   }
+
+  const validSortColumns = [
+    "article_id",
+    "title",
+    "topic",
+    "author",
+    "created_at",
+    "votes",
+    "article_img_url",
+  ];
+  const validOrders = ["asc", "desc"];
+
+  if (sort_by && !validSortColumns.includes(sort_by)) {
+    return Promise.reject({ status: 404, msg: "Invalid sort_by query" });
+  }
+
+  if (order && !validOrders.includes(order)) {
+    return Promise.reject({ status: 404, msg: "Invalid order query" });
+  }
+
   let sqlQuery = `SELECT articles.article_id,articles.title,articles.topic,articles.author,articles.created_at,articles.votes,articles.article_img_url, COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id`;
 
   if (topic) {
@@ -53,9 +73,18 @@ exports.fetchArticles = (query) => {
     articles.votes,
     articles.article_img_url`;
 
-  const orderBy = ` ORDER BY articles.created_at DESC`;
-
-  sqlQuery += orderBy;
+  if (sort_by) {
+    sqlQuery += ` ORDER BY ${sort_by}`;
+    if (order) {
+      sqlQuery += ` ${order.toUpperCase()}`;
+    } else {
+      sqlQuery += ` DESC`;
+    }
+  } else if (order) {
+    sqlQuery += ` ORDER BY articles.created_at ${order}`
+  } else {
+    sqlQuery += ` ORDER BY articles.created_at DESC`;
+  }
 
   const values = topic ? [topic] : [];
 

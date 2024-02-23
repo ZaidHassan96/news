@@ -129,12 +129,55 @@ describe("GET: /api/articles", () => {
         });
     });
 
-    test("should return 404 if an invalid query is entered", () => {
+    test("should return 404 if an invalid topic query is entered", () => {
       return request(app)
         .get("/api/articles?topic=banana")
         .expect(404)
         .then((response) => {
           expect(response.body.msg).toBe("not found");
+        });
+    });
+    test("should return the articles sorted by the default column being created_at and default order being desc", () => {
+      return request(app)
+        .get("/api/articles?sort_by")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeSortedBy("created_at", { descending: true });
+        });
+    });
+    test("should return the articles sorted by any given column and order either being asc or desc", () => {
+      return request(app)
+        .get("/api/articles?sort_by=title&&order=asc")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeSortedBy("title");
+        });
+    });
+    test("should return the articles ordered by either asc or desc", () => {
+      return request(app)
+        .get("/api/articles?order")
+        .expect(200)
+        .then((response) => {
+          const articles = response.body.articles;
+          expect(articles).toBeSortedBy("created_at", { descending: true });
+        });
+    });
+    test("should return 404 if an invalid sort_by query is entered", () => {
+      return request(app)
+        .get("/api/articles?sort_by=banana")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid sort_by query");
+        });
+    });
+    test("should return 400 if an invalid order query is entered", () => {
+      return request(app)
+        .get("/api/articles?sort_by=author&&order=banana")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid order query");
         });
     });
   });
@@ -379,4 +422,29 @@ describe("GET: /api/users", () => {
         expect(response.body.msg).toBe("path not found");
       });
   });
+});
+describe("GET: /api/users/:username", () => {
+  test("a user object which should have the following properties: username avatar_url name", () => {
+    return request(app)
+      .get("/api/users/lurker")
+      .expect(200)
+      .then((response) => {
+        const user = response.body;
+        expect(user).toEqual({
+          username: "lurker",
+          name: "do_nothing",
+          avatar_url:
+            "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png",
+        });
+      });
+  });
+  test("sends a 404 status and error message when given a non existant username", () => {
+    return request(app)
+      .get("/api/users/apple")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("username does not exist");
+      });
+  });
+  
 });
