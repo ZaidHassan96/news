@@ -81,7 +81,7 @@ exports.fetchArticles = (query) => {
       sqlQuery += ` DESC`;
     }
   } else if (order) {
-    sqlQuery += ` ORDER BY articles.created_at ${order}`
+    sqlQuery += ` ORDER BY articles.created_at ${order}`;
   } else {
     sqlQuery += ` ORDER BY articles.created_at DESC`;
   }
@@ -169,5 +169,62 @@ exports.changeVoteOnArticleId = (article_id, inc_votes) => {
     }
 
     return result.rows[0];
+  });
+};
+
+exports.insertArticle = (articleData) => {
+  const { title, topic, author, body, article_img_url } = articleData;
+
+  if (
+    typeof title !== 'string' ||
+    typeof topic !== 'string' ||
+    typeof author !== 'string' ||
+    typeof body !== 'string'
+  ) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request missing input, or incorrect input value type",
+    });
+  }
+  
+  return checkUserExists(author).then((doesUserExist) => {
+    if (!doesUserExist) {
+      return Promise.reject({
+        status: 404,
+        msg: "user not found",
+      });
+    }
+
+    return db
+      .query(
+        `ALTER TABLE articles ADD COLUMN comment_count INT DEFAULT 0 NOT NULL`
+      )
+      .then(() => {
+        if (!article_img_url) {
+          const formatInput = format(
+            `INSERT INTO articles (title, topic ,author, body) VALUES (%L, %L, %L, %L) RETURNING *;`,
+            title,
+            topic,
+            author,
+            body
+          );
+
+          return db.query(formatInput).then((result) => {
+            return result.rows[0];
+          });
+        }
+        const formatInput = format(
+          `INSERT INTO articles (title, topic ,author, body, article_img_url) VALUES ( %L, %L, %L, %L, %L) RETURNING *;`,
+          title,
+          topic,
+          author,
+          body,
+          article_img_url
+        );
+
+        return db.query(formatInput).then((result) => {
+          return result.rows[0];
+        });
+      });
   });
 };
