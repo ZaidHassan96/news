@@ -507,3 +507,113 @@ describe("PATCH: /api/comments/:comment_id", () => {
     return request(app).patch(`/api/comments/1`).send(newVote).expect(200);
   });
 });
+describe("POST: /api/articles", () => {
+  test("should post an article", () => {
+    const articleData = {
+      title: "Great",
+      topic: "mitch",
+      author: "rogersop",
+      body: "mitch is the greatest",
+      article_img_url:
+        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+    };
+    return request(app)
+      .post(`/api/articles`)
+      .send(articleData)
+      .expect(201)
+      .then((response) => {
+        const article = response.body;
+
+        expect(article).toMatchObject({
+          article: {
+            title: "Great",
+            topic: "mitch",
+            author: "rogersop",
+            body: "mitch is the greatest",
+            created_at: expect.any(String),
+            votes: 0,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+            comment_count: 0,
+          },
+        });
+      });
+  });
+  test("articles_img_url will default if not provided", () => {
+    const articleData = {
+      title: "Great",
+      topic: "mitch",
+      author: "rogersop",
+      body: "mitch is the greatest",
+    };
+    return request(app)
+      .post(`/api/articles`)
+      .send(articleData)
+      .expect(201)
+      .then((response) => {
+        const article = response.body;
+
+        expect(article).toMatchObject({
+          article: {
+            title: "Great",
+            topic: "mitch",
+            author: "rogersop",
+            body: "mitch is the greatest",
+            created_at: expect.any(String),
+            votes: 0,
+            article_img_url:
+              "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700",
+            comment_count: 0,
+          },
+        });
+      });
+  });
+  test("should return a 400 bad request if request body is empty or missing: title,topic,author,body ", () => {
+    const articleData = {};
+    return request(app)
+      .post("/api/articles")
+      .send(articleData)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe(
+          "Bad request missing input, or incorrect input value type"
+        );
+      });
+  });
+  test("should return a 404 if user does not exist", () => {
+    const articleData = {
+      title: "Great",
+      topic: "mitch",
+      author: "apple",
+      body: "mitch is the greatest",
+      article_img_url:
+        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+    };
+
+    return request(app)
+      .post(`/api/articles`)
+      .send(articleData)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("user not found");
+      });
+  });
+  test("should return a 400 bad request if values of properties are incorrect data types", () => {
+    const articleData = {
+      title: 123,
+      topic: 123,
+      author: "rogersop",
+      body: 123,
+      article_img_url: 123,
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(articleData)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe(
+          "Bad request missing input, or incorrect input value type"
+        );
+      });
+  });
+});

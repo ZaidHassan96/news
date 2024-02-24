@@ -2,13 +2,14 @@ const {
   checkArticleIdExists,
   insertCommentByArticleId,
   changeVoteOnArticleId,
+  insertArticle,
 } = require("../app-models/articles-models");
 const { fetchCommentsByArticleId } = require("../app-models/articles-models");
 const {
   fetchArticleById,
   fetchArticles,
 } = require("../app-models/articles-models");
-const { commentData } = require("../db/data/test-data");
+const { commentData, articleData } = require("../db/data/test-data");
 
 exports.getArticleById = (request, response, next) => {
   const article_id = request.params.article_id;
@@ -77,6 +78,18 @@ exports.patchArticleByArticleId = (request, response, next) => {
     .then((result) => {
       const article = result;
       response.status(200).send({ article });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postArticles = (request, response, next) => {
+  const articleData = request.body;
+  insertArticle(articleData)
+    .then((result) => {
+      const article = result;
+      response.status(201).send({ article });
     })
     .catch((err) => {
       next(err);
