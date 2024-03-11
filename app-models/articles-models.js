@@ -2,6 +2,7 @@ const db = require("../db/connection");
 const format = require("pg-format");
 const { checkUserExists } = require("../functions/user-check");
 const { checkTopicExists } = require("../functions/topic-check");
+const { parse } = require("dotenv");
 
 exports.fetchArticleById = (article_id) => {
   return db
@@ -34,7 +35,19 @@ exports.fetchArticleById = (article_id) => {
 };
 
 exports.fetchArticles = (query) => {
-  const { topic, sort_by, order } = query;
+  const { topic, sort_by, order, limit, p } = query;
+
+  const allowedParameters = ["topic", "sort_by", "order", "limit", "p"];
+  const unexpectedParameters = Object.keys(query).filter(
+    (param) => !allowedParameters.includes(param)
+  );
+
+  if (unexpectedParameters.length > 0) {
+    return Promise.reject({
+      status: 400,
+      msg: `Unexpected query parameters`,
+    });
+  }
   if (topic && typeof topic !== "string") {
     return Promise.reject({ status: 400, msg: "Invalid topic query" });
   }
@@ -57,6 +70,16 @@ exports.fetchArticles = (query) => {
   if (order && !validOrders.includes(order)) {
     return Promise.reject({ status: 404, msg: "Invalid order query" });
   }
+
+  if ( limit && isNaN(parseInt(limit, 10))) {
+    return Promise.reject({ status: 400, msg: "Invalid limit query" });
+  }
+
+  if ( p && isNaN(parseInt(p, 10))){
+    return Promise.reject({ status: 400, msg: "Invalid page query" })
+
+  }
+  
 
   let sqlQuery = `SELECT articles.article_id,articles.title,articles.topic,articles.author,articles.created_at,articles.votes,articles.article_img_url, COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id`;
 
@@ -87,6 +110,12 @@ exports.fetchArticles = (query) => {
   }
 
   const values = topic ? [topic] : [];
+  const offset = (p - 1) * limit || 0; // Use `page` instead of `p`, and default to 0 if not provided
+  sqlQuery += ` LIMIT $${values.length + 1 || 1} OFFSET $${
+    values.length + 2 || 2
+  }`;
+  values.push(limit || 10);
+  values.push(offset);
 
   return db.query(sqlQuery, values).then((result) => {
     if (result.rows.length === 0) {
@@ -176,17 +205,17 @@ exports.insertArticle = (articleData) => {
   const { title, topic, author, body, article_img_url } = articleData;
 
   if (
-    typeof title !== 'string' ||
-    typeof topic !== 'string' ||
-    typeof author !== 'string' ||
-    typeof body !== 'string'
+    typeof title !== "string" ||
+    typeof topic !== "string" ||
+    typeof author !== "string" ||
+    typeof body !== "string"
   ) {
     return Promise.reject({
       status: 400,
       msg: "Bad request missing input, or incorrect input value type",
     });
   }
-  
+
   return checkUserExists(author).then((doesUserExist) => {
     if (!doesUserExist) {
       return Promise.reject({
@@ -227,4 +256,16 @@ exports.insertArticle = (articleData) => {
         });
       });
   });
+};
+exports.removeArticleByArticleId = (article_id) => {
+  return db
+    .query(`DELETE FROM articles WHERE article_id = $1`, [article_id])
+    .then((result) => {
+      if (result.rowCount === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "id does not exist",
+        });
+      }
+    });
 };

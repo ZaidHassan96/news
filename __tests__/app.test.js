@@ -181,6 +181,56 @@ describe("GET: /api/articles", () => {
         });
     });
   });
+  describe("GET: /api/articles (pagination)", () => {
+    test("limit, which limits the number of responses (defaults to 10).", () => {
+      return request(app)
+        .get("/api/articles?limit")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.articles.length).toBe(10);
+        });
+    });
+    test("limit, which limits the number of responses according to the number you want.", () => {
+      return request(app)
+        .get("/api/articles?limit=5")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.articles.length).toBe(5);
+        });
+    });
+    test("limit, which limits the number of responses according to the number you want from the page you want.", () => {
+      return request(app)
+        .get("/api/articles?limit=5&p=1")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.articles.length).toBe(5);
+        });
+    });
+    test("responds with 400 bad request if limit value is of invalid value", () => {
+      return request(app)
+        .get("/api/articles?limit=apple")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid limit query");
+        });
+    });
+    test("responds with 400 bad request if p value is of invalid value", () => {
+      return request(app)
+        .get("/api/articles?limit=5&p=apple")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid page query");
+        });
+    });
+    test("responds with 400 bad request if a invalid query is entered", () => {
+      return request(app)
+        .get("/api/articles?apple")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Unexpected query parameters");
+        });
+    });
+  });
 });
 describe("GET: /api/articles/:article_id/comments", () => {
   test("returns an array of comments for given article_id with the following properties: comment_id, votes, created_at, author, body article_id", () => {
@@ -614,6 +664,75 @@ describe("POST: /api/articles", () => {
         expect(response.body.msg).toBe(
           "Bad request missing input, or incorrect input value type"
         );
+      });
+  });
+});
+describe("POST /api/topics", () => {
+  test("should insert a new topic with a 201 ", () => {
+    const topic = {
+      slug: "Avatar",
+      description: "The last airbender",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(topic)
+      .expect(201)
+      .then((response) => {
+        const topic = response.body;
+        expect(topic).toEqual({
+          topic: {
+            slug: "Avatar",
+            description: "The last airbender",
+          },
+        });
+      });
+  });
+  test("should return a 400 bad request if request body is empty or missing: slug or description", () => {
+    const topic = {};
+    return request(app)
+      .post("/api/topics")
+      .send(topic)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe(
+          "Bad request missing input, or incorrect input value type"
+        );
+      });
+  });
+  test("should return a 400 bad request if values of properties are incorrect data types", () => {
+    const topic = {
+      slug: 123,
+      description: 123,
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(topic)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe(
+          "Bad request missing input, or incorrect input value type"
+        );
+      });
+  });
+});
+describe("DELETE: /api/articles/:article_id", () => {
+  test("should delete a article by article_id and respond with 204 no content", () => {
+    return request(app).delete("/api/comments/10").expect(204);
+  });
+  test(" responds with a 404 appropriate status and error message when given a non-existent id", () => {
+    return request(app)
+      .delete("/api/articles/999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("id does not exist");
+      });
+  });
+  test("responds with a 400 appropriate status and error message when given an invalid id", () => {
+    return request(app)
+      .delete("/api/articles/apples")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
       });
   });
 });
