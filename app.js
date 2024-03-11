@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 
 const { getEndPoints } = require("./app-controllers/api-controllers");
 
@@ -8,6 +9,7 @@ const articlesRouter = require("./routes/articles-router");
 const commentsRouter = require("./routes/comments-router");
 const topicsRouter = require("./routes/topics-router");
 const usersRouter = require("./routes/users-router");
+app.use(cors());
 app.use(express.json());
 
 app.use("/api/articles", articlesRouter);
