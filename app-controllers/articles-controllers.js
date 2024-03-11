@@ -3,6 +3,7 @@ const {
   insertCommentByArticleId,
   changeVoteOnArticleId,
   insertArticle,
+  removeArticleByArticleId,
 } = require("../app-models/articles-models");
 const { fetchCommentsByArticleId } = require("../app-models/articles-models");
 const {
@@ -95,3 +96,14 @@ exports.postArticles = (request, response, next) => {
       next(err);
     });
 };
+
+exports.deleteArticleByArticleId = (request, response, next) => {
+  const { article_id } = request.params;
+  removeArticleByArticleId(article_id)
+    .then(() => {
+      response.status(204).send();
+    })
+    .catch((err) => {
+      next(err);
+    });
+}

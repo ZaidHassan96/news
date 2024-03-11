@@ -138,5 +138,17 @@
         }
       ]
     }
+  },
+  "POST /api/topics": {
+    "description": "posts a new topic",
+    "queries": [],
+    "exampleResponse": {
+      "topic": [
+        {
+          "slug": "topic name here",
+          "description": "description here"
+        }
+      ]
+    }
   }
 }
