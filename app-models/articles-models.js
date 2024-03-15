@@ -35,8 +35,18 @@ exports.fetchArticleById = (article_id) => {
 };
 
 exports.fetchArticles = (query) => {
-  const { topic, sort_by, order, limit, p } = query;
+  let { topic, sort_by, order, limit, p } = query;
 
+  if (sort_by !== undefined && sort_by.trim().length === 0) {
+    sort_by = "created_at";
+  }
+  if (order !== undefined && order.trim().length === 0) {
+    order = "desc";
+  }
+
+  if (limit !== undefined && limit.trim().length === 0) {
+    limit = 10;
+  }
   const allowedParameters = ["topic", "sort_by", "order", "limit", "p"];
   const unexpectedParameters = Object.keys(query).filter(
     (param) => !allowedParameters.includes(param)
@@ -48,6 +58,7 @@ exports.fetchArticles = (query) => {
       msg: `Unexpected query parameters`,
     });
   }
+
   if (topic && typeof topic !== "string") {
     return Promise.reject({ status: 400, msg: "Invalid topic query" });
   }
@@ -71,15 +82,13 @@ exports.fetchArticles = (query) => {
     return Promise.reject({ status: 404, msg: "Invalid order query" });
   }
 
-  if ( limit && isNaN(parseInt(limit, 10))) {
+  if (limit && isNaN(parseInt(limit, 10))) {
     return Promise.reject({ status: 400, msg: "Invalid limit query" });
   }
 
-  if ( p && isNaN(parseInt(p, 10))){
-    return Promise.reject({ status: 400, msg: "Invalid page query" })
-
+  if (p && isNaN(parseInt(p, 10))) {
+    return Promise.reject({ status: 400, msg: "Invalid page query" });
   }
-  
 
   let sqlQuery = `SELECT articles.article_id,articles.title,articles.topic,articles.author,articles.created_at,articles.votes,articles.article_img_url, COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id`;
 
@@ -108,14 +117,19 @@ exports.fetchArticles = (query) => {
   } else {
     sqlQuery += ` ORDER BY articles.created_at DESC`;
   }
-
   const values = topic ? [topic] : [];
-  const offset = (p - 1) * limit || 0; // Use `page` instead of `p`, and default to 0 if not provided
-  sqlQuery += ` LIMIT $${values.length + 1 || 1} OFFSET $${
-    values.length + 2 || 2
-  }`;
-  values.push(limit || 10);
-  values.push(offset);
+
+  if (limit && p) {
+    const offset = (parseInt(p, 10) - 1) * parseInt(limit, 10) || 0;
+    sqlQuery += ` LIMIT $${values.length + 1 || 1} OFFSET $${
+      values.length + 2 || 2
+    }`;
+    values.push(parseInt(limit, 10));
+    values.push(offset);
+  } else if (limit) {
+    sqlQuery += ` LIMIT $${values.length + 1 || 1}`;
+    values.push(parseInt(limit, 10));
+  }
 
   return db.query(sqlQuery, values).then((result) => {
     if (result.rows.length === 0) {

@@ -26,6 +26,7 @@ exports.getArticleById = (request, response, next) => {
 
 exports.getArticles = (request, response, next) => {
   const { query } = request;
+
   fetchArticles(query)
     .then((result) => {
       if (result.length === 0) {
@@ -106,4 +107,4 @@ exports.deleteArticleByArticleId = (request, response, next) => {
     .catch((err) => {
       next(err);
     });
-}
+};

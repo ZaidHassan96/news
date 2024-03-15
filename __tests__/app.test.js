@@ -92,6 +92,8 @@ describe("GET: /api/articles", () => {
       .expect(200)
       .then((response) => {
         const articles = response.body.articles;
+
+        expect(articles.length).toBe(13);
         articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
