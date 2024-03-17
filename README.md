@@ -1,6 +1,6 @@
 ## News
 
-Hosted version: https://news-1-ejzq.onrender.com
+Hosted version: https://news-1-ejzq.onrender.com.api
 
 ## Project summary:
 
