@@ -1,6 +1,8 @@
 # News
 
-## Overview:
+Hosted version: https://news-1-ejzq.onrender.com/api
+
+## Project summary:
 
 This project uses Node.js and PostgreSQL to construct a backend database and API. It handles client requests at different endpoints, providing the necessary data sourced from the news database in response.
 
