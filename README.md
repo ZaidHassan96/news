@@ -6,8 +6,6 @@ Hosted version: https://news-1-ejzq.onrender.com/api
 
 This project uses Node.js and PostgreSQL to construct a backend database and API. It handles client requests at different endpoints, providing the necessary data sourced from the news database in response.
 
-Link to hosted version: https://news-1-ejzq.onrender.com
-
 > **_NOTE:_** : The minimum versions of Node.js and Postgres needed to run the project:
 
 > - `Node.js:` v10.13.0
@@ -76,5 +74,3 @@ This enables you to make requests to the API via localhost:9090/api. You may use
 ```
 $ npm run test
 ```
-
-
