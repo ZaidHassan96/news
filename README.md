@@ -1,60 +1,78 @@
-## News
+# News
 
-Hosted version: https://news-1-ejzq.onrender.com
+## Overview:
 
-## Project summary:
+This project uses Node.js and PostgreSQL to construct a backend database and API. It handles client requests at different endpoints, providing the necessary data sourced from the news database in response.
 
-This project is a news blog where users can create and share articles on various topics. Users can also engage in discussions by posting comments on articles.
+Link to hosted version: https://news-1-ejzq.onrender.com
 
-## Getting started:
+> **_NOTE:_** : The minimum versions of Node.js and Postgres needed to run the project:
 
-To run this project locally, follow these steps:
+> - `Node.js:` v10.13.0
+> - `Postgres` (PostgreSQL) : v8.7.3
 
-## Prerequisites:
+### 1. Getting started
 
-Make sure you have the following installed:
+Clone the repository:
 
-Node.js (minimum version: 10.13.0. )
-Postgresql (minimum version: "8.7.3")
+```
+$ git clone https://github.com/ziani96/scoop.git
+```
 
-## Clone the repository
+Navigate to the repository:
 
-git clone https://github.com/ziani96/news.git
+```
+$ cd scoop
+```
 
-## Install dependencies
+## 2. Enviroment variables
 
-npm install
+Create the files .env.development and .env.test in the root directory of the project.
 
-## Database setup
+Inside of .env.development, write `PGDATABASE=nc_news`
 
-1.create a local Postgresql database
+Inside of .env.test, write `PGDATABASE=nc_news_test`
 
-2.seed the database with the sample date
+If your local database needs a password for access, include it in the files by adding "PGPASSWORD=your-password-here". You can skip this if no password is needed.
 
-## Enviroment variables
+### 3. Install the dependencies
 
-create 2 .env files in the project root
-For development: .env.development
-For testing: .env.test
+Use the `npm install` command to install the dependencies:
 
-Open each .env file and add the following variables:
+```
+$ npm install
+```
 
-## .env.development
+### 4. Setup Local database
 
-DATABASE_URL= <'your database url'>
-SECRET_KEY=your_secret_key
+Run the following scripts to setup and seed the databases locally:
 
-## .env.test
+• To create the database:
 
-DATABASE_URL= <'your database url'>
-SECRET_KEY=test_secret_key
+```
+$ npm run setup-dbs
+```
 
-## Ensure these files are .gitignored
+• To seed the database:
+
+```
+$ npm run run seed
+```
+
+### 5. Run server
+
+Listen to incoming requests by running the following:
+
+```
+$ node listen.js
+```
+
+This enables you to make requests to the API via localhost:9090/api. You may use tools such as Insomnia to send requests containing JSON.
 
 # Run test
 
-npm run test
+```
+$ npm run test
+```
 
-# Start server
 
-npm start
